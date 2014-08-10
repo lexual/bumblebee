@@ -1,0 +1,7 @@
+date,clicks,url
+2014-01-01,9,http://google.com/?x=foo
+2014-01-01,9,http://google.com/?y=bar&x=foo
+2014-01-01,9,http://google.com/?x=foo#section_a
+2014-01-01,9,http://google.com/?a=apple&x=foo&z=zoo
+2014-01-01,9,http://google.com/?not_x=foo
+2014-01-01,9,http://google.com/?y=Y&not_x=foo
