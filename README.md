@@ -56,3 +56,5 @@ Current Operations:
 * remove_columns
 * remove_duplicates
 * sum_up_by
+
+Supports Python 2 & 3.
