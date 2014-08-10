@@ -42,3 +42,17 @@ Gives:
         0  Melbourne 2014-08-08 22:00:00      10.1       50.18         6.3
         1  Melbourne 2014-08-08 21:30:00      10.5       50.90         7.8
         2  Melbourne 2014-08-08 21:00:00      10.9       51.62         8.8
+
+
+Current Operations:
+* change_date_or_time_format
+* copy
+* rename
+* extract_query_string
+* extract_text
+* filter_columns
+* filter_rows
+* formula
+* remove_columns
+* remove_duplicates
+* sum_up_by
