@@ -1,8 +1,9 @@
-import io
+# import io
 import math
 import os
 import pandas as pd
 
+from six import StringIO
 from .context import Transformer
 
 
@@ -280,7 +281,7 @@ class TestTransformation:
         print(output.iloc[-3:])
 
     def _run_transformation(self, yaml_text, test_csvpath):
-        config = io.StringIO(yaml_text)
+        config = StringIO(yaml_text)
         t = Transformer.from_yaml(config)
         output = t.transform(test_csvpath)
         return output
