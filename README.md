@@ -33,7 +33,7 @@ Then Python calls are:
 
     import bumblebee as bb
 
-    t = bb.Transformer.from_yaml(config)
+    t = bb.Transformer.from_yaml('etl.yaml')
     output = t.transform('my_data.csv')
 
 Gives:
