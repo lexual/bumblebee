@@ -34,9 +34,9 @@ class Transformer:
     def from_yaml(cls, filepath_or_buffer):
         if isinstance(filepath_or_buffer, str):
             with open(filepath_or_buffer) as f:
-                config = yaml.load(f)
+                config = yaml.safe_load(f)
         else:
-            config = yaml.load(filepath_or_buffer)
+            config = yaml.safe_load(filepath_or_buffer)
         kwargs = {}
         options = [
             'column_separator',
