@@ -127,6 +127,50 @@ class TestTransformation:
         assert 'foo' in output
         assert output['foo'][0] == 'bar'
 
+    def test_substitute_text(self):
+        yaml_config = """
+            list_of_actions:
+                - replace_text:
+                    - target_column: client
+                      result_column: result
+                      text_to_find: f
+                      replacement_text: F
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_group.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 5
+        assert 'result' in output
+        assert output['result'][0] == 'Foo'
+
+
+    def test_prepend_text(self):
+        yaml_config = """
+            list_of_actions:
+                - prepend_text:
+                    - target_column: client
+                      result_column: result
+                      text: hi-
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_group.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 5
+        assert 'result' in output
+        assert output['result'][0] == 'hi-foo'
+
+    def test_append_text(self):
+        yaml_config = """
+            list_of_actions:
+                - append_text:
+                    - target_column: client
+                      result_column: result
+                      text: -bar
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_group.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 5
+        assert 'result' in output
+        assert output['result'][0] == 'foo-bar'
+
     def test_filter_columns(self):
         yaml_config = """
             list_of_actions:
@@ -166,6 +210,21 @@ class TestTransformation:
         assert len(output) == 1
         assert output['b'].values[0] == 2
 
+    def test_filtered_formula(self):
+        yaml_config = """
+            list_of_actions:
+                - edit_specific_rows:
+                    - filter_rows: 1 < b < 3
+                      list_of_actions:
+                        - formula:
+                            - a = 666
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_filter.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 3
+        assert output['a'].values[0] == 1
+        assert output['a'].values[1] == 666
+
     def test_drop_duplicates(self):
         yaml_config = """
             list_of_actions:
@@ -183,11 +242,11 @@ class TestTransformation:
                 - date
             list_of_actions:
                 - change_date_or_time_format:
-                    - date_or_time_column: date
+                    - target_column: date
                       result_column: date_string_y
                       date_format: '%Y'
                 - change_date_or_time_format:
-                    - date_or_time_column: date
+                    - target_column: date
                       result_column: date_string
                       date_format: '%m/%d/%Y'
         """
@@ -204,8 +263,8 @@ class TestTransformation:
                 - rename:
                     - time = local_date_time_full[80]
                 - extract_text:
-                    - text_column: url
-                      column_to_store_extract: x_value
+                    - target_column: url
+                      result_column: x_value
                       regex: |
                           # Note re.VERBOSE is default.
                           .*          # anything at the start
@@ -225,8 +284,8 @@ class TestTransformation:
         yaml_config = """
             list_of_actions:
                 - extract_query_string:
-                    - url_column: url
-                      column_to_store_extract: x_value
+                    - target_column: url
+                      result_column: x_value
                       query_string: x
         """
         test_csv = os.path.join(self.testdatadir, 'data_urls.csv')

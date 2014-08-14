@@ -56,5 +56,7 @@ Current Operations:
 * remove_columns
 * remove_duplicates
 * sum_up_by
+* edit_specific_rows
+* replace_text
 
 Supports Python 2 & 3.
