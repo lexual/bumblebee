@@ -38,7 +38,7 @@ class Action:
             'extract_text': ExtractTextAction,
             'filter_columns': FilterColumnAction,
             'filter_rows': FilterRowAction,
-            'edit_specific_rows': FilteredRowFormulaAction,
+            'edit_specific_rows': EditSpecificRowsAction,
             'formula': FormulaAction,
             'remove_columns': RemoveColumnAction,
             'remove_duplicates': RemoveDuplicatesAction,
@@ -206,7 +206,7 @@ class FilterRowAction(Action):
         return input_data
 
 
-class FilteredRowFormulaAction(Action):
+class EditSpecificRowsAction(Action):
     """
     self.instructions: list of dict
         keys:
