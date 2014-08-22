@@ -142,9 +142,10 @@ class ChangeColumnFormatAction(Action):
             if column_format == 'date':
                 output_data[column] = pd.to_datetime(output_data[column])
             if column_format == 'text':
-                output_data[column] = output_data[column].dropna().astype(int)
-                output_data[column] = output_data[column].dropna().astype(str)
                 output_data[column] = output_data[column].fillna('')
+                output_data[column] = output_data[column].astype(int)
+                output_data[column] = output_data[column].astype(str)
+
         return output_data
 
 
