@@ -26,6 +26,7 @@ class ActionList:
             output_data = action.perform_instructions(output_data)
         return output_data
 
+    @classmethod
     def from_yaml(cls, filepath_or_buffer):
         if isinstance(filepath_or_buffer, str):
             with open(filepath_or_buffer) as f:
