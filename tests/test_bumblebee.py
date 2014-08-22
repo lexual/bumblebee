@@ -16,7 +16,7 @@ class TestTransformation:
     def test_rename_column(self):
         yaml_config = """
             list_of_actions:
-                - rename:
+                - rename_column:
                     - full_name = name
         """
         output = self._run_transformation(yaml_config, self.test_csv_input)
@@ -28,7 +28,7 @@ class TestTransformation:
     def test_copy_column(self):
         yaml_config = """
             list_of_actions:
-                - copy:
+                - copy_column:
                     - full_name = name
         """
         output = self._run_transformation(yaml_config, self.test_csv_input)
@@ -48,6 +48,28 @@ class TestTransformation:
         assert len(output) == 2
         assert 'a' in output
 
+    def test_make_columns_lowercase(self):
+        yaml_config = """
+            list_of_actions:
+                - make_column_names_lowercase
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_funky_columns.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert 'first name' in output
+        assert 'First Name' not in output
+
+    def test_make_columns_alphanumeric(self):
+        yaml_config = """
+            list_of_actions:
+                - make_column_names_alphanumeric
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_funky_columns.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert 'First Name' not in output
+        assert 'First_Name' in output
+        assert 'Weight in kgs.' not in output
+        assert 'Weight_in_kgs' in output
+
     def test_specify_encoding(self):
         yaml_config = """
             encoding: utf-16
@@ -59,7 +81,7 @@ class TestTransformation:
 
     def test_skip_rows_at_start(self):
         yaml_config = """
-            number_of_rows_to_skip_at_file_start: 3
+            column_headers_are_on_row_number: 4
         """
         test_csv = os.path.join(self.testdatadir, '3_extra_rows_at_start.csv')
         output = self._run_transformation(yaml_config, test_csv)
@@ -73,12 +95,30 @@ class TestTransformation:
         output = self._run_transformation(yaml_config, test_csv)
         assert len(output) == 2
 
+    def test_skip_to_column_headers(self):
+        yaml_config = """
+            read_from_row_that_starts_with: name
+        """
+        test_csv = os.path.join(self.testdatadir, '3_extra_rows_at_start.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 2
+
+    def test_skip_to_column_headers_with_buffer(self):
+        yaml_config = """
+            read_from_row_that_starts_with: name
+        """
+        test_csv = os.path.join(self.testdatadir, '3_extra_rows_at_start.csv')
+        with open(test_csv) as f:
+            output = self._run_transformation(yaml_config, f)
+        assert len(output) == 2
+
     def test_parsing_date_column(self):
         yaml_config = """
-            columns_with_dates_or_times:
-                - date
-                - time
-                - wordy_date
+            read_these_columns_in_these_formats:
+                date:
+                    - date
+                    - time
+                    - wordy_date
         """
         test_csv = os.path.join(self.testdatadir, 'data_dates.csv')
         output = self._run_transformation(yaml_config, test_csv)
@@ -86,6 +126,34 @@ class TestTransformation:
         assert output['date'][0].year == 2014
         assert output['time'][0].year == 2014
         assert output['wordy_date'][0].year == 2014
+
+    def test_parsing_numbers_as_text(self):
+        yaml_config = """
+            read_these_columns_in_these_formats:
+                text:
+                    - a
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_cols.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 2
+        assert output['a'][0] == '1'
+        assert output['b'][0] == 1
+
+    def test_parsing_numbers_with_columns(self):
+        yaml_config = """
+            read_these_columns_in_these_formats:
+                number:
+                    - d
+                    - e
+                    - f
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_cols.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 2
+        assert output['d'][0] == 1001
+        assert output['e'][0] == 2
+        assert output['f'][0] == 3.5
+
 
     def test_only_load_certain_columns(self):
         yaml_config = """
@@ -106,7 +174,7 @@ class TestTransformation:
     def test_column_addition(self):
         yaml_config = """
             list_of_actions:
-                - formula:
+                - run_these_formula:
                     - sum = a + b
         """
         test_csv = os.path.join(self.testdatadir, 'data_cols.csv')
@@ -118,7 +186,7 @@ class TestTransformation:
     def test_column_set_to_text(self):
         yaml_config = """
             list_of_actions:
-                - formula:
+                - run_these_formula:
                     - foo = 'bar'
         """
         test_csv = os.path.join(self.testdatadir, 'data_cols.csv')
@@ -146,7 +214,7 @@ class TestTransformation:
     def test_prepend_text(self):
         yaml_config = """
             list_of_actions:
-                - prepend_text:
+                - add_text_at_start:
                     - target_column: client
                       result_column: result
                       text: hi-
@@ -160,7 +228,7 @@ class TestTransformation:
     def test_append_text(self):
         yaml_config = """
             list_of_actions:
-                - append_text:
+                - add_text_at_end:
                     - target_column: client
                       result_column: result
                       text: -bar
@@ -174,7 +242,7 @@ class TestTransformation:
     def test_filter_columns(self):
         yaml_config = """
             list_of_actions:
-                - filter_columns:
+                - only_keep_these_columns:
                     - a
                     - b
         """
@@ -182,6 +250,22 @@ class TestTransformation:
         output = self._run_transformation(yaml_config, test_csv)
         assert len(output) == 3
         assert 'a' in output
+        assert 'b' in output
+        assert 'c' not in output
+
+    def test_filter_columns_with_spaces(self):
+        yaml_config = """
+            list_of_actions:
+                - copy_column:
+                    - adam ant = a
+                - only_keep_these_columns:
+                    - adam ant
+                    - b
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_filter.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 3
+        assert 'adam ant' in output
         assert 'b' in output
         assert 'c' not in output
 
@@ -202,7 +286,7 @@ class TestTransformation:
     def test_filter_rows(self):
         yaml_config = """
             list_of_actions:
-                - filter_rows:
+                - only_keep_rows_where:
                     - 1 < b < 3
         """
         test_csv = os.path.join(self.testdatadir, 'data_filter.csv')
@@ -213,10 +297,10 @@ class TestTransformation:
     def test_filtered_formula(self):
         yaml_config = """
             list_of_actions:
-                - edit_specific_rows:
-                    - filter_rows: 1 < b < 3
+                - only_edit_rows_where:
+                    - rows_match: 1 < b < 3
                       list_of_actions:
-                        - formula:
+                        - run_these_formula:
                             - a = 666
         """
         test_csv = os.path.join(self.testdatadir, 'data_filter.csv')
@@ -238,17 +322,22 @@ class TestTransformation:
 
     def test_output_date_in_particular_format(self):
         yaml_config = """
-            columns_with_dates_or_times:
-                - date
+            read_these_columns_in_these_formats:
+                date:
+                    - date
             list_of_actions:
                 - change_date_or_time_format:
                     - target_column: date
                       result_column: date_string_y
-                      date_format: '%Y'
+                      date_format: YYYY
                 - change_date_or_time_format:
                     - target_column: date
                       result_column: date_string
-                      date_format: '%m/%d/%Y'
+                      date_format: mm/dd/YYYY
+                - change_date_or_time_format:
+                    - target_column: date
+                      result_column: date_string_x
+                      date_format: mm/dd/YY
         """
         test_csv = os.path.join(self.testdatadir, 'data_dates.csv')
         output = self._run_transformation(yaml_config, test_csv)
@@ -256,11 +345,12 @@ class TestTransformation:
         print('\n', output)
         assert output['date_string_y'][0] == '2014'
         assert output['date_string'][0] == '01/13/2014'
+        assert output['date_string_x'][0] == '01/13/14'
 
     def test_regex_extraction(self):
         yaml_config = """
             list_of_actions:
-                - rename:
+                - rename_column:
                     - time = local_date_time_full[80]
                 - extract_text:
                     - target_column: url
@@ -312,19 +402,20 @@ class TestTransformation:
 
     def test_melbourne_weather(self):
         yaml_config = """
-            number_of_rows_to_skip_at_file_start: 19
+            column_headers_are_on_row_number: 20
             number_of_rows_to_skip_at_file_end: 2
-            columns_with_dates_or_times:
-                - local_date_time_full[80]
+            read_these_columns_in_these_formats:
+                date:
+                    - local_date_time_full[80]
             list_of_actions:
-                - rename:
+                - rename_column:
                     - time = local_date_time_full[80]
                     - name = name[80]
-                - formula:
+                - run_these_formula:
                     - air_temp_f = air_temp * 9 / 5 + 32
-                - filter_rows:
+                - only_keep_rows_where:
                     - apparent_t < 10 & name == 'Melbourne'
-                - filter_columns:
+                - only_keep_these_columns:
                     - name
                     - time
                     - air_temp

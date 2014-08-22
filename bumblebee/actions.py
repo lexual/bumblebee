@@ -11,8 +11,13 @@ class ActionList:
     def __init__(self, list_of_actions):
         self.actions = []
         for step in list_of_actions:
-            action_name = list(step.keys())[0]
-            action = Action.factory(action_name, step[action_name])
+            try:
+                action_name = list(step.keys())[0]
+                instruction = step[action_name]
+            except AttributeError:
+                action_name = step
+                instruction = []
+            action = Action.factory(action_name, instruction)
             self.actions.append(action)
 
     def perform_instructions(self, input_data):
@@ -32,20 +37,22 @@ class Action:
         # just calls different constructors based on passed action
         action_classes = {
             'change_date_or_time_format': ChangeDateFormat,
-            'copy': CopyAction,
-            'rename': RenameAction,
+            'copy_column': CopyAction,
+            'rename_column': RenameAction,
             'extract_query_string': ExtractQueryStringAction,
             'extract_text': ExtractTextAction,
-            'filter_columns': FilterColumnAction,
-            'filter_rows': FilterRowAction,
-            'edit_specific_rows': EditSpecificRowsAction,
-            'formula': FormulaAction,
+            'only_keep_these_columns': FilterColumnAction,
+            'only_keep_rows_where': FilterRowAction,
+            'only_edit_rows_where': EditSpecificRowsAction,
+            'run_these_formula': FormulaAction,
             'remove_columns': RemoveColumnAction,
             'remove_duplicates': RemoveDuplicatesAction,
             'replace_text': ReplaceTextAction,
-            'append_text': AppendTextAction,
-            'prepend_text': PrependTextAction,
+            'add_text_at_end': AppendTextAction,
+            'add_text_at_start': PrependTextAction,
             'sum_up_by': GroupBySumAction,
+            'make_column_names_lowercase': LowerCaseColumnNamesAction,
+            'make_column_names_alphanumeric': AlphaNumColumnNamesAction,
         }
         try:
             action_class = action_classes[action]
@@ -77,10 +84,40 @@ class ChangeDateFormat(Action):
     def perform_instructions(self, input_data):
         for instruction in self.instructions:
             result_col = instruction['result_column']
-            format_date = lambda x: x.strftime(instruction['date_format'])
+            date_format = instruction['date_format']
+            date_format_strings = (
+                # TODO: hour/minute/second support.
+                ('YYYY', '%Y'),
+                ('YY', '%y'),
+                ('MM', '%m'),
+                ('DD', '%d'),
+            )
+            for date_str, strformat in date_format_strings:
+                date_format = date_format.replace(date_str, strformat)
+                date_format = date_format.replace(date_str.lower(), strformat)
+            format_date = lambda x: x.strftime(date_format)
             dates = input_data[instruction['target_column']].dropna()
             input_data[result_col] = dates.map(format_date)
         return input_data
+
+
+class AlphaNumColumnNamesAction(Action):
+    """
+    """
+    def perform_instructions(self, input_data):
+        spaces_to_underscore = lambda x: x.replace(' ', '_')
+        output_data = input_data.rename(columns=spaces_to_underscore)
+        strip_punctuation = lambda x: re.sub('[^\w_]', '', x)
+        output_data = output_data.rename(columns=strip_punctuation)
+        return output_data
+
+
+class LowerCaseColumnNamesAction(Action):
+    """
+    """
+    def perform_instructions(self, input_data):
+        output_data = input_data.rename(columns=str.lower)
+        return output_data
 
 
 class AppendTextAction(Action):
@@ -211,15 +248,15 @@ class EditSpecificRowsAction(Action):
     self.instructions: list of dict
         keys:
             filter_row
-            formula
+            run_these_formula
     e.g.
-        - filter_rows: 1 < b < 3
-          formula: a = 666
+        - rows_match: 1 < b < 3
+          run_these_formula: a = 666
     """
     def perform_instructions(self, input_data):
         output_data = input_data
         for instruction in self.instructions:
-            filter_instruction = instruction['filter_rows']
+            filter_instruction = instruction['rows_match']
             filter_row_action = FilterRowAction([filter_instruction])
             filtered_data = filter_row_action.perform_instructions(output_data)
             actions = ActionList(instruction['list_of_actions'])
@@ -294,12 +331,15 @@ class FormulaAction(Action):
         for instruction in self.instructions:
             try:
                 input_data.eval(instruction)
-            except ValueError:
+            except (ValueError, SyntaxError):
                 # These hacks exists as .eval only works with numbers, not text
-                result_col, _, value = instruction.split(maxsplit=2)
+                result_col, value = instruction.split(' = ', maxsplit=1)
                 if value[0] in ['"', "'"]:
                     # set to a string
                     input_data[result_col] = value[1:-1]
                 else:
-                    input_data[result_col] = input_data[value]
+                    try:
+                        input_data[result_col] = input_data[value]
+                    except KeyError:
+                        input_data[result_col] = value
         return input_data
