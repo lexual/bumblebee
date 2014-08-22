@@ -112,7 +112,18 @@ class TestTransformation:
             output = self._run_transformation(yaml_config, f)
         assert len(output) == 2
 
-    def test_parsing_date_column_acion(self):
+    def test_parsing_numbers_as_text_action(self):
+        yaml_config = """
+            list_of_actions:
+                - ensure_column_is_in_this_format:
+                    - temp: text
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_dates.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 2
+        assert output['temp'][0] == '30'
+
+    def test_parsing_date_column_action(self):
         yaml_config = """
             list_of_actions:
                 - ensure_column_is_in_this_format:

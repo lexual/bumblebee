@@ -141,6 +141,8 @@ class ChangeColumnFormatAction(Action):
             column = list(instruction.keys())[0]
             if column_format == 'date':
                 output_data[column] = pd.to_datetime(output_data[column])
+            if column_format == 'text':
+                output_data[column] = output_data[column].astype(str)
         return output_data
 
 
