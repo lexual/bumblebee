@@ -63,5 +63,6 @@ Current Operations:
 * sum_up_by
 * make_column_names_lowercase
 * make_column_names_alphanumeric
+* ensure_column_is_in_this_format
 
 Supports Python 2 & 3.

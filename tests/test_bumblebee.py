@@ -4,7 +4,7 @@ import os
 import pandas as pd
 
 from six import StringIO
-from .context import Transformer
+from .context import Convertor
 
 
 class TestTransformation:
@@ -458,6 +458,6 @@ class TestTransformation:
 
     def _run_transformation(self, yaml_text, test_csvpath):
         config = StringIO(yaml_text)
-        t = Transformer.from_yaml(config)
+        t = Convertor.from_yaml(config)
         output = t.transform(test_csvpath)
         return output

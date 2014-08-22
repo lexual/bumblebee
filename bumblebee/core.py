@@ -4,10 +4,10 @@ import re
 import six
 import yaml
 
-from .actions import ActionList
+from .actions import Transformer
 
 
-class Transformer:
+class Convertor:
     def __init__(self,
                  data_format='csv',
                  column_headers_are_on_row_number=1,
@@ -27,7 +27,7 @@ class Transformer:
         self.only_load_these_columns = only_load_these_columns or []
 
         list_of_actions = list_of_actions or []
-        self.action_list = ActionList(list_of_actions)
+        self.action_list = Transformer(list_of_actions)
 
         header_row = column_headers_are_on_row_number
         self.column_headers_are_on_row_number = header_row

@@ -7,7 +7,7 @@ class UnknownActionError(Exception):
     pass
 
 
-class ActionList:
+class Transformer:
     def __init__(self, list_of_actions):
         self.actions = []
         for step in list_of_actions:
@@ -288,7 +288,7 @@ class EditSpecificRowsAction(Action):
             filter_instruction = instruction['rows_match']
             filter_row_action = FilterRowAction([filter_instruction])
             filtered_data = filter_row_action.perform_instructions(output_data)
-            actions = ActionList(instruction['list_of_actions'])
+            actions = Transformer(instruction['list_of_actions'])
             transformed = actions.perform_instructions(filtered_data)
             output_data.loc[transformed.index] = transformed
         return input_data
