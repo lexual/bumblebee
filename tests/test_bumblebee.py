@@ -115,7 +115,7 @@ class TestTransformation:
     def test_parsing_date_column_acion(self):
         yaml_config = """
             list_of_actions:
-                - change_format_of_column:
+                - ensure_column_is_in_this_format:
                     - date: date
                     - time: date
                     - wordy_date: date

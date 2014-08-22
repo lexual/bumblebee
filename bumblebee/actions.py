@@ -62,7 +62,7 @@ class Action:
             'sum_up_by': GroupBySumAction,
             'make_column_names_lowercase': LowerCaseColumnNamesAction,
             'make_column_names_alphanumeric': AlphaNumColumnNamesAction,
-            'change_format_of_column': ChangeColumnFormatAction,
+            'ensure_column_is_in_this_format': ChangeColumnFormatAction,
         }
         try:
             action_class = action_classes[action]
