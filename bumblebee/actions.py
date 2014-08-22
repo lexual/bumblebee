@@ -26,6 +26,14 @@ class ActionList:
             output_data = action.perform_instructions(output_data)
         return output_data
 
+    def from_yaml(cls, filepath_or_buffer):
+        if isinstance(filepath_or_buffer, str):
+            with open(filepath_or_buffer) as f:
+                actions = yaml.safe_load(f)
+        else:
+            actions = yaml.safe_load(filepath_or_buffer)
+        return cls(actions)
+
 
 # abstract, never used.
 class Action:
