@@ -112,6 +112,21 @@ class TestTransformation:
             output = self._run_transformation(yaml_config, f)
         assert len(output) == 2
 
+    def test_parsing_date_column_acion(self):
+        yaml_config = """
+            list_of_actions:
+                - change_format_of_column:
+                    - date: date
+                    - time: date
+                    - wordy_date: date
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_dates.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 2
+        assert output['date'][0].year == 2014
+        assert output['time'][0].year == 2014
+        assert output['wordy_date'][0].year == 2014
+
     def test_parsing_date_column(self):
         yaml_config = """
             read_these_columns_in_these_formats:

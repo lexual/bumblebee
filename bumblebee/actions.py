@@ -53,6 +53,7 @@ class Action:
             'sum_up_by': GroupBySumAction,
             'make_column_names_lowercase': LowerCaseColumnNamesAction,
             'make_column_names_alphanumeric': AlphaNumColumnNamesAction,
+            'change_format_of_column': ChangeColumnFormatAction,
         }
         try:
             action_class = action_classes[action]
@@ -117,6 +118,20 @@ class LowerCaseColumnNamesAction(Action):
     """
     def perform_instructions(self, input_data):
         output_data = input_data.rename(columns=str.lower)
+        return output_data
+
+
+class ChangeColumnFormatAction(Action):
+    """
+    self.instructions: list of dicts
+    """
+    def perform_instructions(self, input_data):
+        output_data = input_data
+        for instruction in self.instructions:
+            column_format = list(instruction.values())[0]
+            column = list(instruction.keys())[0]
+            if column_format == 'date':
+                output_data[column] = pd.to_datetime(output_data[column])
         return output_data
 
 
