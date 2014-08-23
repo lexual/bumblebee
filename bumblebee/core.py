@@ -13,6 +13,7 @@ class Convertor:
                  column_headers_are_on_row_number=1,
                  number_of_rows_to_skip_at_file_end=0,
                  encoding='utf-8',
+                 # TODO: deprecate read_these_columns_in_these_formats
                  read_these_columns_in_these_formats=None,
                  only_load_these_columns=None,
                  column_separator=',',

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import re
 import yaml
@@ -141,10 +142,23 @@ class ChangeColumnFormatAction(Action):
             column = list(instruction.keys())[0]
             if column_format == 'date':
                 output_data[column] = pd.to_datetime(output_data[column])
-            if column_format == 'text':
+            elif column_format == 'text':
                 original = output_data[column]
                 output_data[column] = original.astype(str).str.replace('\.0$',
                                                                        '')
+
+            elif column_format == 'number':
+                dtype = output_data[column].dtype
+                if (not np.issubdtype(dtype, int) and
+                        not np.issubdtype(dtype, float)):
+                    output_data[column] = output_data[column].str.replace(',',
+                                                                          '')
+                    output_data[column] = output_data[column].str.replace('$',
+                                                                          '')
+                    try:
+                        output_data[column] = output_data[column].astype(int)
+                    except ValueError:
+                        output_data[column] = output_data[column].astype(float)
 
         return output_data
 
@@ -268,7 +282,8 @@ class FilterRowAction(Action):
     """
     def perform_instructions(self, input_data):
         for instruction in self.instructions:
-            input_data = input_data.query(instruction)
+            # .copy to shut SettingWithCopyWarning from Pandas.
+            input_data = input_data.copy().query(instruction)
         return input_data
 
 

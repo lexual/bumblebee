@@ -165,6 +165,21 @@ class TestTransformation:
         assert output['a'][0] == '1'
         assert output['b'][0] == 1
 
+    def test_parsing_numbers_with_columns_action(self):
+        yaml_config = """
+        list_of_actions:
+            - ensure_column_is_in_this_format:
+                - d: number
+                - e: number
+                - f: number
+        """
+        test_csv = os.path.join(self.testdatadir, 'data_cols.csv')
+        output = self._run_transformation(yaml_config, test_csv)
+        assert len(output) == 2
+        assert output['d'][0] == 1001
+        assert output['e'][0] == 2
+        assert output['f'][0] == 3.5
+
     def test_parsing_numbers_with_columns(self):
         yaml_config = """
             read_these_columns_in_these_formats:
