@@ -81,6 +81,7 @@ class GroupBySumAction(Action):
         columns_to_group_by = self.instructions
         grouped = input_data.groupby(columns_to_group_by, as_index=False)
         output_data = grouped.sum()
+        output_data.reset_index()
         return output_data
 
 
