@@ -8,10 +8,10 @@ Just a thought-bubble at the moment, but the idea is:
 * Readable by anyone, including non-programmers.
 * Create a simple webapp with GUI to create this YAML.
 
-e.g. this dataset: http://www.bom.gov.au/fwo/IDV60901/IDV60901.94868.axf
+e.g. this dataset: http://www.bom.gov.au/fwo/IDV60901/IDV60901.95936.axf
 
-    read_from_row_that_starts_with: 19
-    number_of_rows_to_skip_at_file_end: 2
+    read_from_row_that_starts_with: sort_order
+    number_of_rows_to_skip_at_file_end: 1
     read_these_columns_in_these_formats:
         date:
             - local_date_time_full[80]
@@ -22,7 +22,7 @@ e.g. this dataset: http://www.bom.gov.au/fwo/IDV60901/IDV60901.94868.axf
         - run_these_formula:
             - air_temp_f = air_temp * 9 / 5 + 32
         - only_keep_rows_where:
-            - apparent_t < 10 & name == 'Melbourne'
+            - apparent_t < 13 & name == 'Melbourne (Olympic Park)'
         - only_keep_these_columns:
             - name
             - time
@@ -34,8 +34,8 @@ Then Python calls are:
 
     import bumblebee as bb
 
-    t = bb.Transformer.from_yaml('etl.yaml')
-    output = t.transform('my_data.csv')
+    c = bb.Convertor.from_yaml('etl.yaml')
+    output = c.transform('my_data.csv')
 
 Gives:
 

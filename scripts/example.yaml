@@ -1,0 +1,19 @@
+read_from_row_that_starts_with: sort_order
+number_of_rows_to_skip_at_file_end: 1
+read_these_columns_in_these_formats:
+    date:
+        - local_date_time_full[80]
+list_of_actions:
+    - rename_column:
+        - time = local_date_time_full[80]
+        - name = name[80]
+    - run_these_formula:
+        - air_temp_f = air_temp * 9 / 5 + 32
+    - only_keep_rows_where:
+        - apparent_t < 13 & name == 'Melbourne (Olympic Park)'
+    - only_keep_these_columns:
+        - name
+        - time
+        - air_temp
+        - air_temp_f
+        - apparent_t
